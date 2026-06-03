@@ -10,7 +10,15 @@ import '../features/auth/screens/splash_screen.dart';
 import '../features/member/screens/digital_card_screen.dart';
 import '../features/member/screens/dues_screen.dart';
 import '../features/member/screens/home_screen.dart';
+import '../features/news/screens/article_screen.dart';
+import '../features/news/screens/news_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
+import '../features/reports/screens/report_screen.dart';
+import '../features/reports/screens/suggestion_screen.dart';
+import '../features/surveys/screens/survey_detail_screen.dart';
+import '../features/surveys/screens/surveys_screen.dart';
+import '../features/voting/screens/election_detail_screen.dart';
+import '../features/voting/screens/voting_screen.dart';
 
 /// Role-aware redirect lives here — one source of truth for the
 /// citizen / member / admin branching that the architecture decision calls
@@ -71,6 +79,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/card', builder: (_, __) => const DigitalCardScreen()),
       GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
       GoRoute(path: '/dues', builder: (_, __) => const DuesScreen()),
+
+      // Member content & participation
+      GoRoute(path: '/news', builder: (_, __) => const NewsScreen()),
+      GoRoute(
+          path: '/news/:slug',
+          builder: (_, s) =>
+              ArticleScreen(slug: s.pathParameters['slug']!)),
+      GoRoute(path: '/vote', builder: (_, __) => const VotingScreen()),
+      GoRoute(
+          path: '/vote/:id',
+          builder: (_, s) =>
+              ElectionDetailScreen(electionId: s.pathParameters['id']!)),
+      GoRoute(path: '/surveys', builder: (_, __) => const SurveysScreen()),
+      GoRoute(
+          path: '/surveys/:id',
+          builder: (_, s) =>
+              SurveyDetailScreen(surveyId: s.pathParameters['id']!)),
+      GoRoute(path: '/report', builder: (_, __) => const ReportScreen()),
+      GoRoute(path: '/suggest', builder: (_, __) => const SuggestionScreen()),
 
       // Admin shell
       GoRoute(path: '/admin', builder: (_, __) => const AdminShell()),

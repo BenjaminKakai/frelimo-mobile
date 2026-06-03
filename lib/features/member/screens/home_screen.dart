@@ -5,6 +5,7 @@ import '../../../config/theme.dart';
 import '../../../shared/i18n.dart';
 import '../../../shared/widgets/flag_stripe.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../news/providers/news_providers.dart';
 
 /// Citizen / member home — single screen that adapts based on the
 /// `isMember` + `status` flags. We deliberately do NOT split into two
@@ -117,48 +118,39 @@ class HomeScreen extends ConsumerWidget {
                 _Tile(
                     icon: Icons.how_to_vote_outlined,
                     label: 'home.tile.vote'.tr(ref),
-                    onTap: () => _comingSoon(context, 'Vote')),
+                    onTap: () => context.push('/vote')),
                 _Tile(
                     icon: Icons.poll_outlined,
                     label: 'home.tile.surveys'.tr(ref),
-                    onTap: () => _comingSoon(context, 'Surveys')),
+                    onTap: () => context.push('/surveys')),
                 _Tile(
                     icon: Icons.report_outlined,
                     label: 'home.tile.report'.tr(ref),
-                    onTap: () => _comingSoon(context, 'Report')),
+                    onTap: () => context.push('/report')),
                 _Tile(
                     icon: Icons.lightbulb_outline,
                     label: 'home.tile.suggest'.tr(ref),
-                    onTap: () => _comingSoon(context, 'Suggestion')),
+                    onTap: () => context.push('/suggest')),
               ],
             ),
             const SizedBox(height: 24),
-            Text('home.recentNews'.tr(ref),
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            ...List.generate(
-                3,
-                (i) => Card(
-                      child: ListTile(
-                        leading: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryRed
-                                .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.article_outlined,
-                              color: AppColors.primaryRed),
-                        ),
-                        title: Text('Notícia ${i + 1}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700)),
-                        subtitle:
-                            Text('common.comingSoon'.tr(ref)),
-                      ),
-                    )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('home.recentNews'.tr(ref),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w800)),
+                TextButton(
+                  onPressed: () => context.push('/news'),
+                  child: Text('news.read'.tr(ref),
+                      style: const TextStyle(
+                          color: AppColors.primaryRed,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const _RecentNews(),
             // bottom space for the profile icon
             const SizedBox(height: 80),
           ],
@@ -283,6 +275,75 @@ class _Tile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Top-3 recent articles on the home feed. Triggers a one-time load of the
+/// shared `newsFeedProvider` (the full /news screen reuses the same state),
+/// shows a compact list, and falls back to a "no news yet" line.
+class _RecentNews extends ConsumerStatefulWidget {
+  const _RecentNews();
+  @override
+  ConsumerState<_RecentNews> createState() => _RecentNewsState();
+}
+
+class _RecentNewsState extends ConsumerState<_RecentNews> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(newsFeedProvider).items.isEmpty) {
+        ref.read(newsFeedProvider.notifier).load();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(newsFeedProvider);
+    if (state.items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: Text(
+            state.loading ? 'common.loading'.tr(ref) : 'news.empty'.tr(ref),
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+    final top = state.items.take(3).toList();
+    return Column(
+      children: top
+          .map((a) => Card(
+                child: ListTile(
+                  leading: Container(
+                    width: 48,
+                    height: 48,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryRed.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: (a.coverUrl != null && a.coverUrl!.isNotEmpty)
+                        ? Image.network(a.coverUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                                Icons.article_outlined,
+                                color: AppColors.primaryRed))
+                        : const Icon(Icons.article_outlined,
+                            color: AppColors.primaryRed),
+                  ),
+                  title: Text(a.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: a.category != null ? Text(a.category!) : null,
+                  onTap: () => context.push('/news/${a.slug}'),
+                ),
+              ))
+          .toList(),
     );
   }
 }
