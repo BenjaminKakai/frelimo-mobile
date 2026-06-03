@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme.dart';
 import '../../../shared/i18n.dart';
+import '../../../shared/widgets/member_badge.dart';
 import '../../auth/providers/auth_provider.dart';
 
 /// Read+edit profile. Geography fields are read-only — they're issued by an
@@ -86,6 +87,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Builder(builder: (_) {
+            final tier = tierForUser(u);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (tier.isVerified) ...[
+                      VerifiedTick(tier: tier, size: 20),
+                      const SizedBox(width: 8),
+                    ],
+                    MemberBadge(tier: tier),
+                  ],
+                ),
+                if ((u?.badges ?? const []).isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  CustomBadgeRow(badges: u!.badges),
+                ],
+              ],
+            );
+          }),
+          const SizedBox(height: 20),
           _field('profile.firstName'.tr(ref), _firstName),
           _field('profile.lastName'.tr(ref), _lastName),
           _field('profile.phone'.tr(ref), _phone, keyboard: TextInputType.phone),

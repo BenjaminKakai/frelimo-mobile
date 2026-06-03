@@ -1,10 +1,38 @@
-/// Mirrors the `/profile/me` payload the backend returns. Three boolean
-/// gates — `isAdmin`, `isMember`, and the membership lifecycle `status` —
-/// drive the role-aware shell at the router level.
-///
-/// Geography (`province`, `district`, `ward`, `cell`) is read-only on the
-/// app — those values are issued by an admin at verification time and are
-/// never editable by the citizen themself.
+// Mirrors the `/profile/me` payload the backend returns. Three boolean
+// gates — `isAdmin`, `isMember`, and the membership lifecycle `status` —
+// drive the role-aware shell at the router level.
+//
+// Geography (`province`, `district`, `ward`, `cell`) is read-only on the
+// app — those values are issued by an admin at verification time and are
+// never editable by the citizen themself.
+
+/// An admin-assigned honorific/role/achievement badge (from the Badge
+/// catalogue). `color` is a hex string; `icon` is a Material icon name the
+/// badge widgets map to an `IconData`.
+class AssignedBadge {
+  final String slug;
+  final String namePt;
+  final String nameEn;
+  final String color;
+  final String icon;
+  const AssignedBadge({
+    required this.slug,
+    required this.namePt,
+    required this.nameEn,
+    required this.color,
+    required this.icon,
+  });
+  factory AssignedBadge.fromJson(Map<String, dynamic> j) => AssignedBadge(
+        slug: j['slug']?.toString() ?? '',
+        namePt: j['namePt']?.toString() ?? '',
+        nameEn: j['nameEn']?.toString() ?? '',
+        color: j['color']?.toString() ?? '#009E49',
+        icon: j['icon']?.toString() ?? 'verified',
+      );
+  Map<String, dynamic> toJson() =>
+      {'slug': slug, 'namePt': namePt, 'nameEn': nameEn, 'color': color, 'icon': icon};
+}
+
 class UserModel {
   final String id;
   final String email;
@@ -19,6 +47,8 @@ class UserModel {
   /// A logged-in user with neither flag is treated as a citizen.
   final bool isAdmin;
   final bool isMember;
+  final List<String> roles;
+  final List<AssignedBadge> badges;
 
   /// Membership lifecycle — only meaningful when `isMember` or there is a
   /// pending application. Values from the backend: CITIZEN | PENDING |
@@ -50,6 +80,8 @@ class UserModel {
     this.avatarUrl,
     this.isAdmin = false,
     this.isMember = false,
+    this.roles = const [],
+    this.badges = const [],
     this.status = 'CITIZEN',
     this.memberNumber,
     this.memberSince,
@@ -92,6 +124,15 @@ class UserModel {
       avatarUrl: src['avatarUrl']?.toString(),
       isAdmin: src['isAdmin'] as bool? ?? false,
       isMember: src['isMember'] as bool? ?? false,
+      roles: (src['roles'] is List)
+          ? (src['roles'] as List).map((e) => e.toString()).toList()
+          : const [],
+      badges: (src['badges'] is List)
+          ? (src['badges'] as List)
+              .whereType<Map>()
+              .map((e) => AssignedBadge.fromJson(Map<String, dynamic>.from(e)))
+              .toList()
+          : const [],
       status: src['status']?.toString() ?? 'CITIZEN',
       memberNumber: src['memberNumber']?.toString(),
       memberSince: src['memberSince']?.toString(),
@@ -115,6 +156,8 @@ class UserModel {
         'avatarUrl': avatarUrl,
         'isAdmin': isAdmin,
         'isMember': isMember,
+        'roles': roles,
+        'badges': badges.map((b) => b.toJson()).toList(),
         'status': status,
         'memberNumber': memberNumber,
         'memberSince': memberSince,

@@ -38,6 +38,15 @@ const Map<String, Map<String, String>> _strings = {
     'forgot.cta': 'Enviar instruções',
     'forgot.sent': 'Verifique o seu email.',
 
+    'badge.leadershipNational': 'Liderança Nacional',
+    'badge.leadershipProvincial': 'Liderança Provincial',
+    'badge.coordination': 'Coordenação',
+    'badge.official': 'Quadro do Partido',
+    'badge.member': 'Militante Verificado',
+    'badge.pending': 'Adesão Pendente',
+    'badge.suspended': 'Suspenso',
+    'badge.citizen': 'Cidadão',
+
     'home.welcome': 'Bem-vindo,',
     'home.status.citizen': 'CIDADÃO',
     'home.status.pending': 'PENDENTE',
@@ -201,6 +210,15 @@ const Map<String, Map<String, String>> _strings = {
     'forgot.subtitle': 'Enter your email and we will send instructions.',
     'forgot.cta': 'Send instructions',
     'forgot.sent': 'Check your email.',
+
+    'badge.leadershipNational': 'National Leadership',
+    'badge.leadershipProvincial': 'Provincial Leadership',
+    'badge.coordination': 'Coordination',
+    'badge.official': 'Party Official',
+    'badge.member': 'Verified Member',
+    'badge.pending': 'Membership Pending',
+    'badge.suspended': 'Suspended',
+    'badge.citizen': 'Citizen',
 
     'home.welcome': 'Welcome,',
     'home.status.citizen': 'CITIZEN',

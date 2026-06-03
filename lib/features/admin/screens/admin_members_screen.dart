@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme.dart';
+import '../../../shared/widgets/member_badge.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class AdminMembersScreen extends ConsumerStatefulWidget {
@@ -14,6 +15,15 @@ class _AdminMembersScreenState extends ConsumerState<AdminMembersScreen> {
   bool _loading = true;
   List<Map<String, dynamic>> _items = const [];
   final _searchCtrl = TextEditingController();
+
+  // Derive a membership tier from a member row returned by the admin list.
+  MemberTier _tier(Map<String, dynamic> m) => tierFor(
+        status: (m['status'] ?? m['memberStatus'] ?? 'CITIZEN').toString(),
+        roles: (m['roles'] is List)
+            ? (m['roles'] as List).map((e) => e.toString()).toList()
+            : const [],
+        isAdmin: m['isAdmin'] == true,
+      );
 
   @override
   void initState() {
@@ -91,15 +101,21 @@ class _AdminMembersScreenState extends ConsumerState<AdminMembersScreen> {
                                   fontWeight: FontWeight.w800),
                             ),
                           ),
-                          title: Text(name.isEmpty ? m['email'] ?? '' : name),
-                          subtitle: Text(m['memberNumber']?.toString() ?? '—'),
-                          trailing: Text(
-                            (m['status'] ?? '').toString(),
-                            style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1),
+                          title: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                    name.isEmpty ? m['email'] ?? '' : name,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              if (_tier(m).isVerified) ...[
+                                const SizedBox(width: 5),
+                                VerifiedTick(tier: _tier(m), size: 15),
+                              ],
+                            ],
                           ),
+                          subtitle: Text(m['memberNumber']?.toString() ?? '—'),
+                          trailing: MemberBadge(tier: _tier(m), compact: true),
                         );
                       },
                     )),

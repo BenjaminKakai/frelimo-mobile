@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/theme.dart';
 import '../../../shared/i18n.dart';
+import '../../../shared/models/user_model.dart';
 import '../../../shared/widgets/flag_stripe.dart';
+import '../../../shared/widgets/member_badge.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../news/providers/news_providers.dart';
 
@@ -17,7 +19,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
-    final status = (user?.status ?? 'CITIZEN').toUpperCase();
     final isMember = user?.isMember == true;
 
     return Scaffold(
@@ -61,7 +62,10 @@ class HomeScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _WelcomeCard(name: user?.fullName ?? '', status: status),
+            _WelcomeCard(
+                name: user?.fullName ?? '',
+                tier: tierForUser(user),
+                badges: user?.badges ?? const []),
             const SizedBox(height: 16),
             if (!isMember)
               Card(
@@ -176,18 +180,12 @@ class HomeScreen extends ConsumerWidget {
 
 class _WelcomeCard extends ConsumerWidget {
   final String name;
-  final String status;
-  const _WelcomeCard({required this.name, required this.status});
+  final MemberTier tier;
+  final List<AssignedBadge> badges;
+  const _WelcomeCard({required this.name, required this.tier, this.badges = const []});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final (chipColor, chipLabel) = switch (status) {
-      'VERIFIED' => (AppColors.brandGreen, 'home.status.verified'.tr(ref)),
-      'PENDING' => (AppColors.warning, 'home.status.pending'.tr(ref)),
-      'SUSPENDED' => (AppColors.primaryRed, 'home.status.suspended'.tr(ref)),
-      _ => (Colors.grey.shade600, 'home.status.citizen'.tr(ref)),
-    };
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -214,28 +212,27 @@ class _WelcomeCard extends ConsumerWidget {
                         color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 13)),
                 const SizedBox(height: 4),
-                Text(name,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900)),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: chipColor,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    chipLabel,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 11,
-                        letterSpacing: 1.2),
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(name,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900)),
+                    ),
+                    if (tier.isVerified) ...[
+                      const SizedBox(width: 6),
+                      VerifiedTick(tier: tier, onDark: true, size: 18),
+                    ],
+                  ],
                 ),
+                const SizedBox(height: 10),
+                MemberBadge(tier: tier, onDark: true),
+                if (badges.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  CustomBadgeRow(badges: badges, onDark: true),
+                ],
               ],
             ),
           ),

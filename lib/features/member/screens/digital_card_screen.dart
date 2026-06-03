@@ -11,6 +11,7 @@ import '../../../config/env.dart';
 import '../../../config/theme.dart';
 import '../../../shared/i18n.dart';
 import '../../../shared/widgets/flag_stripe.dart';
+import '../../../shared/widgets/member_badge.dart';
 import '../../auth/providers/auth_provider.dart';
 
 /// The party's digital membership card.
@@ -211,16 +212,29 @@ class _CardBody extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              user.fullName.toString().toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                              ),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    user.fullName.toString().toUpperCase(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                if (tierForUser(user).isVerified) ...[
+                                  const SizedBox(width: 6),
+                                  VerifiedTick(
+                                      tier: tierForUser(user),
+                                      onDark: true,
+                                      size: 16),
+                                ],
+                              ],
                             ),
                             const SizedBox(height: 6),
                             Text(
