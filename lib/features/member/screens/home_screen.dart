@@ -8,6 +8,7 @@ import '../../../shared/widgets/flag_stripe.dart';
 import '../../../shared/widgets/member_badge.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../news/providers/news_providers.dart';
+import '../../notifications/providers/notifications_providers.dart';
 
 /// Citizen / member home — single screen that adapts based on the
 /// `isMember` + `status` flags. We deliberately do NOT split into two
@@ -135,6 +136,11 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.lightbulb_outline,
                     label: 'home.tile.suggest'.tr(ref),
                     onTap: () => context.push('/suggest')),
+                _Tile(
+                    icon: Icons.notifications_none,
+                    label: 'home.tile.notifications'.tr(ref),
+                    badgeCount: ref.watch(unreadNotificationsProvider),
+                    onTap: () => context.push('/notifications')),
               ],
             ),
             const SizedBox(height: 24),
@@ -246,7 +252,15 @@ class _Tile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _Tile({required this.icon, required this.label, required this.onTap});
+
+  /// Unread count drawn as a dot on the icon. 0 hides the badge entirely.
+  final int badgeCount;
+  const _Tile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +277,34 @@ class _Tile extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 28, color: AppColors.primaryRed),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon, size: 28, color: AppColors.primaryRed),
+                if (badgeCount > 0)
+                  Positioned(
+                    right: -6,
+                    top: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1),
+                      constraints: const BoxConstraints(minWidth: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryRed,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        badgeCount > 99 ? '99+' : '$badgeCount',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 8),
             Text(label,
                 textAlign: TextAlign.center,

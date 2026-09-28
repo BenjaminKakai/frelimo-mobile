@@ -59,6 +59,7 @@ const Map<String, Map<String, String>> _strings = {
     'home.tile.surveys': 'Sondagens',
     'home.tile.report': 'Reportar',
     'home.tile.suggest': 'Sugestão',
+    'home.tile.notifications': 'Notificações',
     'home.recentNews': 'Notícias recentes',
 
     'card.title': 'Cartão Digital',
@@ -149,6 +150,11 @@ const Map<String, Map<String, String>> _strings = {
     'voting.voted': 'Já votou nesta eleição',
     'voting.notOpen': 'Eleição não está aberta',
 
+    'notifications.title': 'Notificações',
+    'notifications.empty': 'Sem notificações ainda',
+    'notifications.markRead': 'Marcar como lida',
+    'notifications.read': 'Lida',
+
     'surveys.title': 'Sondagens',
     'surveys.empty': 'Sem sondagens abertas',
     'surveys.toAnswer': 'Por responder',
@@ -232,6 +238,7 @@ const Map<String, Map<String, String>> _strings = {
     'home.tile.surveys': 'Surveys',
     'home.tile.report': 'Report',
     'home.tile.suggest': 'Suggestion',
+    'home.tile.notifications': 'Alerts',
     'home.recentNews': 'Recent news',
 
     'card.title': 'Digital Card',
@@ -321,6 +328,11 @@ const Map<String, Map<String, String>> _strings = {
     'voting.confirmBody': 'Are you sure? Your vote is final.',
     'voting.voted': 'You have already voted in this election',
     'voting.notOpen': 'Election is not open',
+
+    'notifications.title': 'Notifications',
+    'notifications.empty': 'No notifications yet',
+    'notifications.markRead': 'Mark as read',
+    'notifications.read': 'Read',
 
     'surveys.title': 'Surveys',
     'surveys.empty': 'No open surveys',

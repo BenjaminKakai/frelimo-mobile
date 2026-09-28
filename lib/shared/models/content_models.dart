@@ -60,16 +60,28 @@ class Candidate {
     this.photoUrl,
     this.votes = 0,
   });
-  factory Candidate.fromJson(Map<String, dynamic> j) => Candidate(
-        id: j['id']?.toString() ?? '',
-        name: j['name']?.toString() ??
-            [j['firstName'], j['lastName']]
-                .where((s) => s != null && s.toString().isNotEmpty)
-                .join(' '),
-        statement: j['statement']?.toString() ?? j['bio']?.toString(),
-        photoUrl: j['photoUrl']?.toString() ?? j['avatarUrl']?.toString(),
-        votes: (j['votes'] as num?)?.toInt() ?? 0,
-      );
+  factory Candidate.fromJson(Map<String, dynamic> j) {
+    final joined = [j['firstName'], j['lastName']]
+        .where((s) => s != null && s.toString().isNotEmpty)
+        .join(' ');
+    // `GET /elections/:id/candidates` returns only { id, memberId, position },
+    // with no name on the row, so fall back to the position and finally the
+    // member number. A ballot line must never render blank.
+    final name = (j['name']?.toString().trim().isNotEmpty ?? false)
+        ? j['name'].toString()
+        : joined.isNotEmpty
+            ? joined
+            : (j['position']?.toString() ??
+                j['memberNumber']?.toString() ??
+                '');
+    return Candidate(
+      id: j['id']?.toString() ?? '',
+      name: name,
+      statement: j['statement']?.toString() ?? j['bio']?.toString(),
+      photoUrl: j['photoUrl']?.toString() ?? j['avatarUrl']?.toString(),
+      votes: (j['votes'] as num?)?.toInt() ?? 0,
+    );
+  }
 }
 
 class Election {
@@ -176,7 +188,10 @@ class Survey {
       description: j['description']?.toString(),
       status: (j['status']?.toString() ?? 'OPEN').toUpperCase(),
       answered: j['answered'] as bool? ?? false,
-      closesAt: DateTime.tryParse(j['closesAt']?.toString() ?? ''),
+      // The Survey row calls the closing date `endsAt`; keep reading
+      // `closesAt` too in case a future endpoint renames it.
+      closesAt: DateTime.tryParse(
+          (j['closesAt'] ?? j['endsAt'])?.toString() ?? ''),
       questions: qs,
     );
   }
@@ -267,4 +282,56 @@ class Donation {
         receivedAt: DateTime.tryParse(
             j['receivedAt']?.toString() ?? j['createdAt']?.toString() ?? ''),
       );
+}
+
+/// An in-app notification row from `GET /communication/notifications/me`.
+///
+/// `payload` is free-form JSON written by whatever produced the notification,
+/// so `title`/`body` pick the conventional keys out of it and degrade to a
+/// readable string rather than rendering `{}` at the user.
+class AppNotification {
+  final String id;
+  final String channel;
+  final String template;
+  final Map<String, dynamic> payload;
+  final String status;
+  final DateTime? createdAt;
+  final DateTime? readAt;
+  const AppNotification({
+    required this.id,
+    this.channel = 'IN_APP',
+    this.template = '',
+    this.payload = const {},
+    this.status = 'PENDING',
+    this.createdAt,
+    this.readAt,
+  });
+
+  bool get unread => status.toUpperCase() != 'READ' && readAt == null;
+
+  String? get title {
+    final t = payload['title'] ?? payload['subject'];
+    return t?.toString();
+  }
+
+  /// Best-effort human text: the explicit body, else the message/text keys,
+  /// else the title, else nothing (the screen falls back to the template name).
+  String? get body {
+    final b = payload['body'] ?? payload['message'] ?? payload['text'];
+    if (b != null && b.toString().trim().isNotEmpty) return b.toString();
+    return title;
+  }
+
+  factory AppNotification.fromJson(Map<String, dynamic> j) {
+    final raw = j['payload'];
+    return AppNotification(
+      id: j['id']?.toString() ?? '',
+      channel: (j['channel']?.toString() ?? 'IN_APP').toUpperCase(),
+      template: j['template']?.toString() ?? '',
+      payload: raw is Map ? Map<String, dynamic>.from(raw) : const {},
+      status: (j['status']?.toString() ?? 'PENDING').toUpperCase(),
+      createdAt: DateTime.tryParse(j['createdAt']?.toString() ?? ''),
+      readAt: DateTime.tryParse(j['readAt']?.toString() ?? ''),
+    );
+  }
 }

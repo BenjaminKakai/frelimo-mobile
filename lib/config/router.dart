@@ -12,6 +12,7 @@ import '../features/member/screens/dues_screen.dart';
 import '../features/member/screens/home_screen.dart';
 import '../features/news/screens/article_screen.dart';
 import '../features/news/screens/news_screen.dart';
+import '../features/notifications/screens/notifications_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/reports/screens/report_screen.dart';
 import '../features/reports/screens/suggestion_screen.dart';
@@ -96,6 +97,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: '/surveys/:id',
           builder: (_, s) =>
               SurveyDetailScreen(surveyId: s.pathParameters['id']!)),
+      GoRoute(
+          path: '/notifications',
+          builder: (_, __) => const NotificationsScreen()),
       GoRoute(path: '/report', builder: (_, __) => const ReportScreen()),
       GoRoute(path: '/suggest', builder: (_, __) => const SuggestionScreen()),
 

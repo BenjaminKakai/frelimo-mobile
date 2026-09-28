@@ -34,12 +34,40 @@ final electionsListProvider = StateNotifierProvider<ElectionsListNotifier,
   return ElectionsListNotifier(ref);
 });
 
+/// Election detail incl. the ballot options.
+///
+/// The backend exposes no `GET /elections/:id` (it 404s), so the detail is
+/// composed from the two routes that do exist: the list gives us the title,
+/// status and dates, and the candidates sub-resource gives us the ballot
+/// options with their live counts.
 final electionDetailProvider =
     FutureProvider.family<Election?, String>((ref, id) async {
   try {
-    final res = await ref.read(apiClientProvider).get('/elections/$id');
-    final m = ApiUnwrap.map(res.data);
-    return m == null ? null : Election.fromJson(m);
+    final api = ref.read(apiClientProvider);
+    final responses = await Future.wait([
+      api.get('/elections'),
+      api.get('/elections/$id/candidates'),
+    ]);
+
+    final row = ApiUnwrap.list(responses[0].data).firstWhere(
+      (e) => e['id']?.toString() == id,
+      orElse: () => const <String, dynamic>{},
+    );
+    if (row.isEmpty) return null;
+
+    // `_count.ballots` is how the candidates route reports the tally; flatten
+    // it to the `votes` key the model reads.
+    final candidates = ApiUnwrap.list(responses[1].data).map((c) {
+      final count = c['_count'];
+      return {
+        ...c,
+        'votes': c['votes'] ??
+            (count is Map ? count['ballots'] : null) ??
+            0,
+      };
+    }).toList();
+
+    return Election.fromJson({...row, 'candidates': candidates});
   } catch (_) {
     return null;
   }
