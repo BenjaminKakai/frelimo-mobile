@@ -16,10 +16,6 @@ import '../features/notifications/screens/notifications_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/reports/screens/report_screen.dart';
 import '../features/reports/screens/suggestion_screen.dart';
-import '../features/surveys/screens/survey_detail_screen.dart';
-import '../features/surveys/screens/surveys_screen.dart';
-import '../features/voting/screens/election_detail_screen.dart';
-import '../features/voting/screens/voting_screen.dart';
 
 /// Role-aware redirect lives here — one source of truth for the
 /// citizen / member / admin branching that the architecture decision calls
@@ -87,16 +83,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: '/news/:slug',
           builder: (_, s) =>
               ArticleScreen(slug: s.pathParameters['slug']!)),
-      GoRoute(path: '/vote', builder: (_, __) => const VotingScreen()),
-      GoRoute(
-          path: '/vote/:id',
-          builder: (_, s) =>
-              ElectionDetailScreen(electionId: s.pathParameters['id']!)),
-      GoRoute(path: '/surveys', builder: (_, __) => const SurveysScreen()),
-      GoRoute(
-          path: '/surveys/:id',
-          builder: (_, s) =>
-              SurveyDetailScreen(surveyId: s.pathParameters['id']!)),
       GoRoute(
           path: '/notifications',
           builder: (_, __) => const NotificationsScreen()),

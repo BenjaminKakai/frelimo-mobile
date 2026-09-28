@@ -121,14 +121,6 @@ class HomeScreen extends ConsumerWidget {
                     label: 'home.tile.dues'.tr(ref),
                     onTap: () => context.push('/dues')),
                 _Tile(
-                    icon: Icons.how_to_vote_outlined,
-                    label: 'home.tile.vote'.tr(ref),
-                    onTap: () => context.push('/vote')),
-                _Tile(
-                    icon: Icons.poll_outlined,
-                    label: 'home.tile.surveys'.tr(ref),
-                    onTap: () => context.push('/surveys')),
-                _Tile(
                     icon: Icons.report_outlined,
                     label: 'home.tile.report'.tr(ref),
                     onTap: () => context.push('/report')),
@@ -235,10 +227,6 @@ class _WelcomeCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 MemberBadge(tier: tier, onDark: true),
-                if (badges.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  CustomBadgeRow(badges: badges, onDark: true),
-                ],
               ],
             ),
           ),

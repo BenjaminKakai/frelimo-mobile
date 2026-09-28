@@ -101,10 +101,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     MemberBadge(tier: tier),
                   ],
                 ),
-                if ((u?.badges ?? const []).isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  CustomBadgeRow(badges: u!.badges),
-                ],
               ],
             );
           }),

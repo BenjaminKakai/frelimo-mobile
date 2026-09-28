@@ -1,3 +1,9 @@
+// Member status display.
+//
+// The awarded-badge catalog (CustomBadgeChip / CustomBadgeRow) was removed
+// with the badges feature, which the 27 Sep 2026 spec set does not carry.
+// What remains is the status-derived tier and its verified tick: that is
+// membership standing, not an awarded badge, and the digital card needs it.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/theme.dart';
@@ -136,97 +142,11 @@ class MemberBadge extends ConsumerWidget {
 
 /// Parse a `#RRGGBB` (or `RRGGBB`) hex string to a Color, falling back to
 /// brand green on anything malformed.
-Color _hexColor(String hex) {
-  var h = hex.replaceAll('#', '').trim();
-  if (h.length == 6) h = 'FF$h';
-  final v = int.tryParse(h, radix: 16);
-  return v == null ? AppColors.brandGreen : Color(v);
-}
+
 
 /// Maps the subset of Material icon names the backend seeds to real IconData.
 /// Unknown names fall back to a generic award icon so a new badge never
 /// crashes the UI.
-IconData iconForName(String name) {
-  switch (name) {
-    case 'star':
-      return Icons.star;
-    case 'military_tech':
-      return Icons.military_tech;
-    case 'account_balance':
-      return Icons.account_balance;
-    case 'gavel':
-      return Icons.gavel;
-    case 'how_to_vote':
-      return Icons.how_to_vote;
-    case 'workspace_premium':
-      return Icons.workspace_premium;
-    case 'volunteer_activism':
-      return Icons.volunteer_activism;
-    case 'shield':
-      return Icons.shield;
-    case 'groups':
-      return Icons.groups;
-    case 'verified':
-      return Icons.verified;
-    default:
-      return Icons.emoji_events;
-  }
-}
-
-/// Chip for a single admin-assigned custom badge (honorific/role/achievement).
-class CustomBadgeChip extends ConsumerWidget {
-  final AssignedBadge badge;
-  final bool onDark;
-  const CustomBadgeChip({super.key, required this.badge, this.onDark = false});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final c = _hexColor(badge.color);
-    final isPt = ref.watch(localeProvider).languageCode == 'pt';
-    final label = (isPt ? badge.namePt : badge.nameEn).isNotEmpty
-        ? (isPt ? badge.namePt : badge.nameEn)
-        : badge.namePt;
-    final bg = onDark ? Colors.white.withValues(alpha: 0.18) : c.withValues(alpha: 0.14);
-    final fg = onDark ? Colors.white : c;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-        border: onDark ? null : Border.all(color: c.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(iconForName(badge.icon), size: 13, color: fg),
-          const SizedBox(width: 5),
-          Text(label,
-              style: TextStyle(color: fg, fontWeight: FontWeight.w800, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Wrap of all assigned custom badges; renders nothing when empty.
-class CustomBadgeRow extends StatelessWidget {
-  final List<AssignedBadge> badges;
-  final bool onDark;
-  const CustomBadgeRow({super.key, required this.badges, this.onDark = false});
-
-  @override
-  Widget build(BuildContext context) {
-    if (badges.isEmpty) return const SizedBox.shrink();
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: badges.map((b) => CustomBadgeChip(badge: b, onDark: onDark)).toList(),
-    );
-  }
-}
-
-/// Small green ✓ tick for inline use next to a name. Renders nothing when the
-/// tier isn't a verified one, so callers can drop it in unconditionally.
 class VerifiedTick extends StatelessWidget {
   final MemberTier tier;
   final double size;
